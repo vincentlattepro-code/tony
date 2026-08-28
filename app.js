@@ -1,8 +1,84 @@
-const app=document.getElementById("app"),reply=document.getElementById("reply"),stateLabel=document.getElementById("stateLabel"),camera=document.getElementById("camera");
-let armed=false,timer=null;
-function setState(n,l){["idle","listening","thinking","speaking"].forEach(s=>app.classList.remove(s));app.classList.add(n);stateLabel.textContent=l}
-function blinkLoop(){setTimeout(()=>{app.classList.add("blink");setTimeout(()=>app.classList.remove("blink"),310);blinkLoop()},1800+Math.random()*3900)}blinkLoop();
-function idleLoop(){if(app.classList.contains("idle")){let x=(Math.random()-.5)*3.6,y=(Math.random()-.5)*2.1,r=(Math.random()-.5)*.18;camera.style.transform=`translate(${x}px,${y}px) rotate(${r}deg) scale(1.004)`}setTimeout(idleLoop,1800+Math.random()*2100)}idleLoop();
-function demoState(n){clearTimeout(timer);if(n==="listening"){setState("listening","TONY VOUS ÉCOUTE");reply.textContent="Je vous écoute.";timer=setTimeout(()=>{setState("idle","TONY DISPONIBLE");reply.textContent="Je surveille la maison."},4200)}else{setState("thinking","ANALYSE EN COURS");reply.textContent="Un instant, je vérifie.";timer=setTimeout(()=>talkDemo("J’ai vérifié. Tout est normal dans la maison."),2200)}}
-function talkDemo(t){t=t||"Tout est sous contrôle. Le portail est fermé et la maison est sécurisée.";setState("speaking","TONY PARLE");reply.textContent=t;if("speechSynthesis"in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang="fr-FR";u.rate=.92;u.pitch=.86;u.onend=()=>{setState("idle","TONY DISPONIBLE");reply.textContent="Je surveille la maison."};speechSynthesis.speak(u)}}
-function toggleAlarm(){armed=!armed;app.classList.toggle("armed",armed);talkDemo(armed?"Mode sécurité activé. Je garde un œil sur la maison.":"Mode sécurité désactivé. Bon retour à la maison.")}
+const app=document.getElementById("app");
+const video=document.getElementById("avatarVideo");
+const cover=document.getElementById("cover");
+const voice=document.getElementById("voice");
+const audioFile=document.getElementById("audioFile");
+const talkBtn=document.getElementById("talkBtn");
+const restBtn=document.getElementById("restBtn");
+const state=document.getElementById("state");
+const reply=document.getElementById("reply");
+
+const idleClips=["videos/clip1.mp4", "videos/clip2.mp4", "videos/clip3.mp4", "videos/clip4.mp4", "videos/clip5.mp4"];
+const talkClips=["videos/clip6.mp4", "videos/clip7.mp4"];
+let mode="idle", lastIdle=-1, lastTalk=-1, audioUrl=null;
+
+function choose(list,last){
+  if(list.length===1)return 0;
+  let n; do{n=Math.floor(Math.random()*list.length)}while(n===last);
+  return n;
+}
+
+function showVideo(src){
+  video.classList.remove("visible");
+  cover.classList.remove("hidden");
+  video.src=src;
+  video.currentTime=0;
+  video.load();
+  video.oncanplay=()=>{
+    video.classList.add("visible");
+    cover.classList.add("hidden");
+    video.play().catch(()=>{});
+  };
+}
+
+function idle(){
+  mode="idle";
+  app.classList.remove("speaking");
+  state.textContent="TONY DISPONIBLE";
+  reply.textContent="Bonjour. Je suis disponible.";
+  lastIdle=choose(idleClips,lastIdle);
+  showVideo(idleClips[lastIdle]);
+}
+
+function talking(){
+  mode="talk";
+  app.classList.add("speaking");
+  state.textContent="TONY PARLE";
+  reply.textContent="Tony parle.";
+  lastTalk=choose(talkClips,lastTalk);
+  showVideo(talkClips[lastTalk]);
+}
+
+video.addEventListener("ended",()=>{
+  if(mode==="talk" && !voice.paused && !voice.ended) talking();
+  else idle();
+});
+
+audioFile.addEventListener("change",()=>{
+  const f=audioFile.files?.[0];
+  if(!f)return;
+  if(audioUrl) URL.revokeObjectURL(audioUrl);
+  audioUrl=URL.createObjectURL(f);
+  voice.src=audioUrl;
+  talkBtn.disabled=false;
+  reply.textContent="Audio chargé. Prêt pour le test.";
+});
+
+talkBtn.addEventListener("click",()=>{
+  if(!voice.src)return;
+  voice.currentTime=0;
+  talking();
+  voice.play().catch(err=>{
+    reply.textContent="Impossible de lire l’audio : "+err.message;
+    idle();
+  });
+});
+
+voice.addEventListener("ended",idle);
+restBtn.addEventListener("click",()=>{
+  voice.pause();
+  idle();
+});
+
+// Start with the exact still image for a short moment, then begin natural idle clips.
+setTimeout(idle,900);

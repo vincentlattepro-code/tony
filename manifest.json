@@ -1,8 +1,8 @@
 {
-  "name": "Tony Home Core",
+  "name": "Tony Video Avatar v2",
   "short_name": "Tony",
   "start_url": "./",
   "display": "fullscreen",
-  "background_color": "#02070b",
-  "theme_color": "#02070b"
+  "background_color": "#03070a",
+  "theme_color": "#03070a"
 }
