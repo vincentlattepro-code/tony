@@ -1,7 +1,7 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#02070b"><link rel="manifest" href="manifest.json">
-<title>Tony v0.7</title><style>
+<title>Tony v0.8</title><style>
 :root{--c:#68ecff;--danger:#ff4658;--ok:#75ffba}*{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02070b;color:#fff;font-family:Arial,sans-serif}
 #app{position:relative;width:100vw;height:100vh;overflow:hidden;background:#02070b}
@@ -35,9 +35,22 @@ button{border:1px solid rgba(104,236,255,.46);background:rgba(2,12,18,.7);color:
 .alert{position:absolute;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(circle at 50% 46%,transparent 20%,rgba(255,20,35,.18) 100%);transition:opacity .4s}
 .armed .alert{opacity:1}.armed{--c:var(--danger)}
 @media(orientation:landscape){.scene{background-size:contain;background-repeat:no-repeat;background-color:#02070b}.facefx{width:min(39vw,420px)}}
+
+/* v0.8: motion intentionally visible */
+.headlife{position:absolute;left:50%;top:37.8%;width:min(51vw,350px);aspect-ratio:.82;transform:translate(-50%,-50%);z-index:7;overflow:hidden;border-radius:46%;pointer-events:none;animation:headLife 5.3s ease-in-out infinite}
+.headlife:before{content:"";position:absolute;width:100vw;height:100vh;left:50%;top:50%;transform:translate(-50%,-37.8%);background:url("tony-scene.png") center/cover no-repeat}
+@keyframes headLife{0%,100%{transform:translate(-50%,-50%) rotate(0)}28%{transform:translate(calc(-50% + 2.5px),calc(-50% - 2px)) rotate(.22deg)}58%{transform:translate(calc(-50% - 2px),calc(-50% + 1px)) rotate(-.18deg)}80%{transform:translate(calc(-50% + 1px),calc(-50% - 1px)) rotate(.10deg)}}
+.chestlife{position:absolute;left:50%;top:58%;width:42%;height:30%;z-index:8;transform:translate(-50%,-50%);border-radius:45%;background:radial-gradient(ellipse,rgba(110,235,255,.07),transparent 67%);animation:chest 4.1s ease-in-out infinite;pointer-events:none}
+@keyframes chest{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.25}50%{transform:translate(-50%,-50%) scale(1.045,1.07);opacity:.85}}
+.eyeGlow{position:absolute;left:50%;top:34.9%;width:min(31vw,210px);height:18px;transform:translateX(-50%);z-index:14;pointer-events:none;background:radial-gradient(ellipse at 25% 50%,rgba(180,248,255,.38),transparent 15%),radial-gradient(ellipse at 75% 50%,rgba(180,248,255,.38),transparent 15%);animation:eyesAlive 7.7s ease-in-out infinite}
+@keyframes eyesAlive{0%,35%,55%,100%{opacity:0}43%{opacity:.34}47%{opacity:.08}}
+.speaking .headlife{animation:talkHead .68s ease-in-out infinite alternate}
+@keyframes talkHead{from{transform:translate(-50%,-50%) rotate(-.18deg)}to{transform:translate(calc(-50% + 3px),calc(-50% - 2px)) rotate(.25deg)}}
+.listening .headlife{animation:listenHead 2.2s ease-in-out infinite alternate}
+@keyframes listenHead{from{transform:translate(-50%,-50%)}to{transform:translate(calc(-50% + 3px),calc(-50% - 3px)) rotate(.30deg)}}
 </style></head><body>
 <div id="app" class="idle"><div class="camera" id="camera"><div class="breath"><div class="scene"></div></div></div>
-<div class="ambient"></div><div class="alert"></div>
+<div class="headlife"></div><div class="chestlife"></div><div class="eyeGlow"></div><div class="ambient"></div><div class="alert"></div>
 <div class="facefx"><div class="lid left"></div><div class="lid right"></div><div class="jaw"></div></div>
 <div class="status"><span class="dot"></span><span id="stateLabel">TONY DISPONIBLE</span></div>
 <div class="replyBox"><div class="reply" id="reply">Bonjour. Je surveille la maison.</div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>

@@ -1,0 +1,1 @@
+v0.8 : tête animée indépendamment, respiration plus visible, vie du regard, mouvements écoute/parole. Toujours 100 % web, sans LivePortrait ni GPU dédié.
