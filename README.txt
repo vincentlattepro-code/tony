@@ -1,22 +1,25 @@
-TONY VIDEO AVATAR v2
+TONY VIDEO AVATAR v3
 
-Cette version repart de zéro et utilise UNIQUEMENT :
-- l'image ChatGPT Image 28 août 2026, 15_46_09(2).png comme image de référence ;
-- les 7 vidéos PixVerse fournies par l'utilisateur.
+Cette version utilise uniquement :
+- la dernière image fournie par l'utilisateur ;
+- les 7 vidéos PixVerse fournies.
 
-Aucune ancienne image Tony/Jarvis n'est incluse.
+Amélioration principale :
+- deux lecteurs vidéo superposés ;
+- la vidéo suivante est préchargée avant la fin de la vidéo courante ;
+- crossfade court (~220 ms) entre les clips ;
+- cache anticipé des clips pour réduire les coupures ;
+- alternance automatique repos/parole.
 
-Vidéos :
-- piste audio supprimée physiquement ;
-- petit filigrane PixVerse en haut à droite retiré par interpolation locale ;
-- cadrage carré 960x960 conservé, sans étirement.
+Audio :
+- les éléments vidéo sont forcés en muted ;
+- seul le fichier audio choisi dans la page est audible.
 
-Comportement :
-- au repos : alternance des 5 clips non-parlants ;
-- lorsqu'un fichier audio est choisi et TEST PAROLE est lancé :
-  les 2 clips de parole alternent tant que l'audio joue ;
-- à la fin de l'audio, retour automatique au mode repos.
+Important :
+les fichiers vidéo eux-mêmes ne sont pas modifiés pour retirer ou masquer leur filigrane.
+Pour un rendu sans filigrane, remplacer les MP4 par des exports autorisés sans watermark
+en conservant les mêmes noms clip1.mp4 ... clip7.mp4.
 
 GitHub Pages :
 téléverser index.html, app.js, manifest.json, README.txt, tony-cover.png
-ET le dossier videos/ avec ses 7 fichiers.
+ET le dossier videos/ complet.

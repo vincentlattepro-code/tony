@@ -1,6 +1,7 @@
 const app=document.getElementById("app");
-const video=document.getElementById("avatarVideo");
 const cover=document.getElementById("cover");
+const A=document.getElementById("videoA");
+const B=document.getElementById("videoB");
 const voice=document.getElementById("voice");
 const audioFile=document.getElementById("audioFile");
 const talkBtn=document.getElementById("talkBtn");
@@ -10,49 +11,115 @@ const reply=document.getElementById("reply");
 
 const idleClips=["videos/clip1.mp4", "videos/clip2.mp4", "videos/clip3.mp4", "videos/clip4.mp4", "videos/clip5.mp4"];
 const talkClips=["videos/clip6.mp4", "videos/clip7.mp4"];
-let mode="idle", lastIdle=-1, lastTalk=-1, audioUrl=null;
+const CROSSFADE=0.22; // seconds
+let mode="idle";
+let current=A, next=B;
+let lastIdle=-1, lastTalk=-1;
+let audioUrl=null;
+let transitionArmed=false;
 
 function choose(list,last){
   if(list.length===1)return 0;
-  let n; do{n=Math.floor(Math.random()*list.length)}while(n===last);
+  let n;
+  do{n=Math.floor(Math.random()*list.length)}while(n===last);
   return n;
 }
 
-function showVideo(src){
-  video.classList.remove("visible");
+function pool(){
+  return mode==="talk" ? talkClips : idleClips;
+}
+
+function pickNextSrc(){
+  const list=pool();
+  if(mode==="talk"){
+    lastTalk=choose(list,lastTalk);
+    return list[lastTalk];
+  } else {
+    lastIdle=choose(list,lastIdle);
+    return list[lastIdle];
+  }
+}
+
+function prepare(el,src){
+  el.pause();
+  el.src=src;
+  el.currentTime=0;
+  el.load();
+}
+
+function primeNext(){
+  transitionArmed=false;
+  prepare(next,pickNextSrc());
+}
+
+function swapPlayers(){
+  const old=current;
+  const incoming=next;
+
+  incoming.currentTime=0;
+  incoming.play().catch(()=>{});
+  incoming.classList.add("active");
+  incoming.classList.remove("preload");
+
+  old.classList.remove("active");
+  old.classList.add("preload");
+
+  setTimeout(()=>{
+    old.pause();
+    old.currentTime=0;
+    current=incoming;
+    next=old;
+    primeNext();
+  },240);
+}
+
+function startMode(newMode){
+  mode=newMode;
+  transitionArmed=false;
+
+  if(mode==="talk"){
+    app.classList.add("speaking");
+    state.textContent="TONY PARLE";
+    reply.textContent="Tony parle.";
+  } else {
+    app.classList.remove("speaking");
+    state.textContent="TONY DISPONIBLE";
+    reply.textContent="Bonjour. Je suis disponible.";
+  }
+
   cover.classList.remove("hidden");
-  video.src=src;
-  video.currentTime=0;
-  video.load();
-  video.oncanplay=()=>{
-    video.classList.add("visible");
+  current.classList.remove("active");
+  next.classList.remove("active");
+  current.classList.add("preload");
+  next.classList.add("preload");
+
+  prepare(current,pickNextSrc());
+  current.oncanplay=()=>{
+    current.classList.add("active");
+    current.classList.remove("preload");
     cover.classList.add("hidden");
-    video.play().catch(()=>{});
+    current.play().catch(()=>{});
+    primeNext();
+    current.oncanplay=null;
   };
 }
 
-function idle(){
-  mode="idle";
-  app.classList.remove("speaking");
-  state.textContent="TONY DISPONIBLE";
-  reply.textContent="Bonjour. Je suis disponible.";
-  lastIdle=choose(idleClips,lastIdle);
-  showVideo(idleClips[lastIdle]);
+function watch(el){
+  el.addEventListener("timeupdate",()=>{
+    if(el!==current) return;
+    const remaining=el.duration-el.currentTime;
+    if(!transitionArmed && Number.isFinite(remaining) && remaining<=CROSSFADE+0.08){
+      transitionArmed=true;
+      if(next.readyState>=2) swapPlayers();
+      else next.addEventListener("canplay",swapPlayers,{once:true});
+    }
+  });
+  el.addEventListener("ended",()=>{
+    if(el!==current) return;
+    if(!transitionArmed) swapPlayers();
+  });
 }
-
-function talking(){
-  mode="talk";
-  app.classList.add("speaking");
-  state.textContent="TONY PARLE";
-  reply.textContent="Tony parle.";
-  lastTalk=choose(talkClips,lastTalk);
-  showVideo(talkClips[lastTalk]);
-}
-
-video.addEventListener("ended",()=>{
-  if(mode==="talk" && !voice.paused && !voice.ended) talking();
-  else idle();
-});
+watch(A);watch(B);
 
 audioFile.addEventListener("change",()=>{
   const f=audioFile.files?.[0];
@@ -67,18 +134,26 @@ audioFile.addEventListener("change",()=>{
 talkBtn.addEventListener("click",()=>{
   if(!voice.src)return;
   voice.currentTime=0;
-  talking();
+  startMode("talk");
   voice.play().catch(err=>{
     reply.textContent="Impossible de lire l’audio : "+err.message;
-    idle();
+    startMode("idle");
   });
 });
 
-voice.addEventListener("ended",idle);
+voice.addEventListener("ended",()=>startMode("idle"));
+
 restBtn.addEventListener("click",()=>{
   voice.pause();
-  idle();
+  startMode("idle");
 });
 
-// Start with the exact still image for a short moment, then begin natural idle clips.
-setTimeout(idle,900);
+// Cache all clips to minimize stalls
+[...idleClips,...talkClips].forEach(src=>{
+  const v=document.createElement("video");
+  v.preload="auto";
+  v.src=src;
+  v.muted=true;
+});
+
+setTimeout(()=>startMode("idle"),250);
