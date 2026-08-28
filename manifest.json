@@ -1,0 +1,8 @@
+{
+  "name": "Tony Home Core",
+  "short_name": "Tony",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#02070b",
+  "theme_color": "#02070b"
+}

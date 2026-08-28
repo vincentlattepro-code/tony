@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02070b">
+<link rel="manifest" href="manifest.json">
+<title>Tony Home Core</title>
+<style>
+:root{--c:#79efff;--ok:#70ffb3;--warn:#ffd86e;--danger:#ff5050}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02070b;color:white;font-family:Inter,Arial,sans-serif}
+#app{position:relative;width:100vw;height:100vh;background:#02070b}
+.scene{position:absolute;inset:-3%;background:url("tony-interface.png") center/cover no-repeat;transform:scale(1.04);animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1.04) translateY(0)}50%{transform:scale(1.052) translateY(-2px)}}
+.vignette{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,transparent 25%,rgba(0,0,0,.67) 100%)}
+.scan{position:absolute;inset:0;opacity:.09;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(121,239,255,.16) 4px);pointer-events:none}
+.header{position:absolute;left:4%;right:4%;top:3%;display:flex;justify-content:space-between;align-items:start;text-shadow:0 2px 14px #000}
+.logo{font-weight:900;letter-spacing:.24em;font-size:clamp(11px,1.3vw,20px)}.logo small{display:block;font-size:.5em;opacity:.65;margin-top:7px}
+.time{text-align:right;font-size:clamp(18px,2vw,32px);font-weight:800}.time small{display:block;font-size:.38em;opacity:.7;margin-top:5px}
+.panel{position:absolute;top:17%;left:3%;width:min(320px,29vw);padding:14px;background:linear-gradient(90deg,rgba(0,13,20,.84),rgba(0,13,20,.18));border-left:2px solid var(--c);backdrop-filter:blur(4px)}
+.panel h3{font-size:11px;color:var(--c);letter-spacing:.16em;margin:0 0 8px}.row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:10px;border-bottom:1px solid rgba(121,239,255,.12)}.row b{color:var(--ok)}
+.cards{position:absolute;right:3%;top:17%;width:min(310px,28vw);display:grid;gap:8px}.card{background:rgba(0,13,20,.66);border:1px solid rgba(121,239,255,.22);padding:11px 13px;backdrop-filter:blur(5px)}.card strong{display:block;color:var(--c);font-size:10px;letter-spacing:.14em}.card span{font-size:10px;opacity:.82}
+.bottom{position:absolute;bottom:4%;left:50%;transform:translateX(-50%);width:min(800px,92vw);text-align:center}
+.reply{min-height:42px;font-size:clamp(16px,2vw,29px);font-weight:650;text-shadow:0 2px 16px #000}
+.wave{height:38px;display:flex;justify-content:center;align-items:center;gap:3px}.wave i{width:2px;height:5px;background:var(--c);box-shadow:0 0 7px var(--c)}.listening .wave i{animation:wave 1s ease-in-out infinite}.wave i:nth-child(2n){animation-delay:.12s}.wave i:nth-child(3n){animation-delay:.25s}@keyframes wave{50%{height:30px}}
+.actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}button{border:1px solid rgba(121,239,255,.45);background:rgba(0,13,20,.76);color:white;padding:9px 13px;border-radius:999px;font-weight:750;backdrop-filter:blur(8px)}.mic{width:58px;height:58px;padding:0;font-size:22px}
+.toast{position:absolute;top:9%;left:50%;transform:translateX(-50%);padding:8px 14px;background:rgba(0,10,15,.8);border:1px solid rgba(121,239,255,.3);font-size:10px;letter-spacing:.08em;opacity:.85}
+@media(max-width:650px){.cards{display:none}.panel{width:45vw}.header{right:3%}.logo{max-width:55vw}.bottom{bottom:3%}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="scene"></div><div class="vignette"></div><div class="scan"></div>
+<div class="header"><div class="logo">TONY // HOME CORE<small>ASSISTANT DOMESTIQUE — V0.2</small></div><div class="time" id="clock">--:--<small id="date"></small></div></div>
+<div class="toast" id="identity">UTILISATEUR : NON IDENTIFIÉ — MODE DÉMO</div>
+<div class="panel">
+<h3>MAISON</h3>
+<div class="row"><span>Home Assistant</span><b id="ha">SIMULÉ</b></div>
+<div class="row"><span>Alarme</span><b id="alarm">DÉSACTIVÉE</b></div>
+<div class="row"><span>Portail</span><b id="gate">FERMÉ</b></div>
+<div class="row"><span>Lumières actives</span><b id="lights">2</b></div>
+<div class="row"><span>Énergie</span><b>OK</b></div>
+</div>
+<div class="cards">
+<div class="card"><strong>PROCHAINE ÉTAPE</strong><span id="next">Connecter Home Assistant et remplacer les états simulés.</span></div>
+<div class="card"><strong>MÉMOIRE LOCALE</strong><span id="memoryInfo">0 souvenir utile enregistré.</span></div>
+<div class="card"><strong>PROACTIVITÉ</strong><span>Scénarios contextuels prêts pour démonstration.</span></div>
+</div>
+<div class="bottom">
+<div class="reply" id="reply">Bonjour. Home Core est prêt pour les essais.</div>
+<div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="actions">
+<button onclick="demoBed()">JE VAIS ME COUCHER</button>
+<button onclick="toggleGate()">PORTAIL</button>
+<button class="mic" onclick="listen()">◉</button>
+<button onclick="toggleAlarm()">ALARME</button>
+<button onclick="remember()">MÉMOIRE</button>
+</div></div></div>
+<script src="app.js"></script>
+</body></html>

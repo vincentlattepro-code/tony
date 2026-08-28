@@ -1,0 +1,21 @@
+{
+  "version": "0.2",
+  "mode": "prototype",
+  "modules": {
+    "visual_idle": [
+      "breathing",
+      "HUD"
+    ],
+    "voice": [
+      "browser_speech_to_text_demo",
+      "browser_text_to_speech_demo"
+    ],
+    "home_assistant": "adapter_placeholder",
+    "identity": "speaker_id_placeholder",
+    "memory": "local_demo_then_database",
+    "proactivity": "rules_then_ai_context",
+    "calendar": "adapter_placeholder",
+    "email": "adapter_placeholder",
+    "energy": "home_assistant_entities_placeholder"
+  }
+}
