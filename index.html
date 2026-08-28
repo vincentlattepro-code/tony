@@ -5,116 +5,194 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#02070b">
 <link rel="manifest" href="manifest.json">
-<title>Tony Home Core v0.3</title>
+<title>Tony Home Core v0.5</title>
 <style>
-:root{--c:#7befff;--ok:#70ffb3;--danger:#ff4c58}
+:root{
+  --cyan:#66eaff;
+  --danger:#ff4050;
+}
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02070b;color:#fff;font-family:Inter,Arial,sans-serif}
-#app{position:relative;width:100vw;height:100vh;perspective:1200px;background:#02070b}
-.world{position:absolute;inset:-5%;transform-style:preserve-3d;transition:transform .18s ease-out}
-.scene{position:absolute;inset:0;background:url("tony-background.jpg") center center/cover no-repeat;filter:contrast(1.03) saturate(1.03);transform:translateZ(-40px) scale(1.08)}
-.depthGlow{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,rgba(83,222,255,.04),transparent 38%),radial-gradient(circle at 50% 50%,transparent 30%,rgba(0,0,0,.62) 100%);pointer-events:none}
-.scan{position:absolute;inset:0;opacity:.08;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(123,239,255,.14) 4px);pointer-events:none}
-.header{position:absolute;top:2.4%;left:4%;right:4%;display:flex;justify-content:space-between;z-index:20;text-shadow:0 3px 18px #000}
-.logo{font-weight:900;letter-spacing:.2em;font-size:clamp(11px,1.5vw,19px)}
-.logo small{display:block;margin-top:6px;font-size:.48em;font-weight:500;opacity:.6}
-.time{text-align:right;font-weight:800;font-size:clamp(17px,2vw,29px)}
-.time small{display:block;margin-top:5px;font-size:.4em;opacity:.7}
-.panel{position:absolute;left:3%;top:15%;width:min(320px,30vw);padding:13px;background:linear-gradient(90deg,rgba(0,12,18,.82),rgba(0,12,18,.12));border-left:2px solid var(--c);backdrop-filter:blur(4px);z-index:15}
-.panel h3{margin:0 0 7px;color:var(--c);font-size:10px;letter-spacing:.16em}
-.row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid rgba(123,239,255,.12);font-size:10px}
-.row b{color:var(--ok)}
-.bottom{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);width:min(820px,94vw);text-align:center;z-index:30}
-.reply{font-size:clamp(16px,2vw,28px);font-weight:700;min-height:40px;text-shadow:0 3px 18px #000}
-.wave{height:34px;display:flex;justify-content:center;align-items:center;gap:3px}
-.wave i{display:block;width:2px;height:4px;background:var(--c);box-shadow:0 0 8px var(--c)}
-.speaking .wave i,.listening .wave i{animation:wave .85s ease-in-out infinite}
-.wave i:nth-child(2n){animation-delay:.11s}.wave i:nth-child(3n){animation-delay:.23s}
-@keyframes wave{50%{height:28px}}
-.actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-button{appearance:none;border:1px solid rgba(123,239,255,.42);background:rgba(0,12,18,.77);color:white;padding:9px 13px;border-radius:999px;font-weight:800;backdrop-filter:blur(8px)}
-.mic{width:58px;height:58px;padding:0;font-size:21px}
-.status{position:absolute;top:9%;left:50%;transform:translateX(-50%);z-index:25;padding:7px 12px;background:rgba(0,9,14,.72);border:1px solid rgba(123,239,255,.24);font-size:10px;letter-spacing:.1em}
-
-/* pseudo facial animation overlays calibrated to the current image */
-.facefx{position:absolute;left:50%;top:37.5%;width:26vw;height:31vw;max-width:430px;max-height:510px;min-width:220px;min-height:280px;transform:translate(-50%,-50%) translateZ(25px);z-index:12;pointer-events:none}
-.eye{position:absolute;top:34.8%;width:15%;height:3.5%;background:rgba(20,10,8,.72);border-radius:50%;transform:scaleY(0);transform-origin:center;filter:blur(.6px)}
-.eye.left{left:26.5%}.eye.right{right:26.5%}
-.blink .eye{animation:blink .16s ease-in-out 2 alternate}
-@keyframes blink{to{transform:scaleY(1)}}
-.mouth{position:absolute;left:50%;top:62.5%;width:8%;height:1.2%;transform:translateX(-50%) scaleY(.12);transform-origin:center;background:rgba(25,7,7,.58);border-radius:50%;filter:blur(.55px);opacity:.88}
-.speaking .mouth{animation:talk .18s ease-in-out infinite alternate}
-@keyframes talk{from{transform:translateX(-50%) scaleY(.2) scaleX(.95)}to{transform:translateX(-50%) scaleY(2.4) scaleX(1.08)}}
-.idlePulse{position:absolute;inset:0;animation:idleBreath 6s ease-in-out infinite;transform-origin:50% 58%}
-@keyframes idleBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.006) translateY(-1px)}}
-.armed{--c:var(--danger)}
-.armed .scene{filter:contrast(1.08) saturate(1.12) brightness(.82)}
-.redAlert{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 25%,rgba(255,30,40,.14) 100%);opacity:0;transition:opacity .4s;z-index:8;pointer-events:none}
-.armed .redAlert{opacity:1}
-
-@media(max-width:700px){
-  .panel{width:47vw;top:13%}
-  .logo{max-width:55vw}
-  .facefx{top:38%;width:48vw;height:58vw}
-  .bottom{bottom:2.3%}
+html,body{
+  margin:0;width:100%;height:100%;overflow:hidden;
+  background:#02070b;color:#fff;font-family:Inter,Arial,sans-serif;
 }
+#app{
+  position:relative;width:100vw;height:100vh;overflow:hidden;
+  background:#02070b;perspective:1400px;
+}
+
+/* EXACT USER-VALIDATED IMAGE — SINGLE VISUAL, NO SECOND CHARACTER */
+.sceneWrap{
+  position:absolute;inset:-1.5%;
+  transform-origin:50% 46%;
+  will-change:transform;
+  animation:livingBreath 7s ease-in-out infinite;
+}
+.scene{
+  position:absolute;inset:0;
+  background:url("tony-scene.png") center center/cover no-repeat;
+  transform:translateZ(0);
+}
+@keyframes livingBreath{
+  0%,100%{transform:scale(1.016) translateY(0)}
+  50%{transform:scale(1.022) translateY(-1px)}
+}
+
+/* very subtle cinematic depth */
+.lightPulse{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 37%,rgba(120,225,255,.035),transparent 26%),
+    radial-gradient(circle at 50% 72%,rgba(0,190,255,.028),transparent 22%);
+  animation:lightAlive 5.5s ease-in-out infinite;
+}
+@keyframes lightAlive{0%,100%{opacity:.55}50%{opacity:1}}
+
+/* eyelids: intentionally subtle, not cartoonish */
+.faceFx{
+  position:absolute;
+  left:50%;top:36.7%;
+  width:min(39.5vw,405px);
+  aspect-ratio:1/1.05;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:8;
+}
+.lid{
+  position:absolute;
+  top:36.1%;
+  width:14.6%;
+  height:4.2%;
+  border-radius:50%;
+  background:rgba(30,16,12,.64);
+  filter:blur(.6px);
+  transform:scaleY(0);
+  transform-origin:center;
+  opacity:.0;
+}
+.lid.left{left:27.1%}
+.lid.right{right:27.1%}
+.blink .lid{
+  animation:blinkReal .135s ease-in-out 2 alternate;
+}
+@keyframes blinkReal{
+  from{transform:scaleY(0);opacity:0}
+  to{transform:scaleY(.92);opacity:.86}
+}
+
+/* tiny jaw shadow only while speaking; avoids replacing the face */
+.jaw{
+  position:absolute;
+  left:50%;top:60.5%;
+  width:10%;height:3.5%;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:rgba(10,4,4,.10);
+  filter:blur(2px);
+  opacity:0;
+}
+.speaking .jaw{
+  animation:jawPulse .21s ease-in-out infinite alternate;
+}
+@keyframes jawPulse{from{opacity:.02;transform:translateX(-50%) scaleY(.7)}to{opacity:.18;transform:translateX(-50%) scaleY(1.35)}}
+
+/* interaction layer */
+.replyBox{
+  position:absolute;left:50%;bottom:8.8%;
+  transform:translateX(-50%);
+  width:min(76vw,730px);
+  text-align:center;z-index:20;
+  text-shadow:0 3px 16px #000;
+}
+.reply{
+  font-size:clamp(15px,1.7vw,25px);
+  font-weight:700;
+  min-height:36px;
+}
+.wave{
+  height:30px;display:flex;align-items:center;justify-content:center;gap:3px;
+}
+.wave i{
+  width:2px;height:4px;background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+}
+.speaking .wave i,.listening .wave i{animation:wave .75s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.11s}
+.wave i:nth-child(3n){animation-delay:.22s}
+@keyframes wave{50%{height:25px}}
+
+.controls{
+  position:absolute;left:50%;bottom:2.3%;
+  transform:translateX(-50%);
+  z-index:25;display:flex;gap:8px;justify-content:center;
+}
+button{
+  border:1px solid rgba(102,234,255,.48);
+  background:rgba(2,12,18,.66);
+  color:#fff;padding:9px 13px;border-radius:999px;
+  font-weight:800;backdrop-filter:blur(8px);
+}
+.mic{width:54px;height:54px;padding:0;font-size:20px}
+
+.mode{
+  position:absolute;top:1.8%;left:50%;transform:translateX(-50%);
+  z-index:25;padding:6px 10px;
+  border:1px solid rgba(102,234,255,.24);
+  background:rgba(0,8,12,.42);
+  font-size:9px;letter-spacing:.12em;
+  opacity:.68;
+}
+
+/* alarm response */
+.alert{
+  position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 50% 50%,transparent 30%,rgba(255,25,40,.14) 100%);
+  transition:opacity .35s;
+}
+.armed .alert{opacity:1}
+.armed{--cyan:var(--danger)}
+
 @media(orientation:portrait){
-  .scene{background-position:50% center}
-  .panel{top:12%;width:48vw}
-  .facefx{top:39%;width:52vw;height:64vw}
-  .header{top:2%}
-  .bottom{bottom:2.5%}
+  .scene{background-size:cover;background-position:center center}
+  .faceFx{
+    top:37.2%;
+    width:min(63vw,420px);
+  }
+  .replyBox{bottom:9.3%;width:88vw}
+  .controls{bottom:2.1%}
 }
 
-.newAvatar{
- position:absolute;left:50%;bottom:-5%;transform:translateX(-50%);
- width:min(67vw,820px);height:94%;
- background:url("tony-avatar.png") bottom center/contain no-repeat;
- filter:drop-shadow(0 18px 34px rgba(0,0,0,.72));
- z-index:6;
+@media(orientation:landscape){
+  .scene{background-size:contain;background-repeat:no-repeat;background-color:#02070b}
 }
-@media(orientation:portrait){.newAvatar{width:112vw;height:80%;bottom:5%}}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="world" id="world">
-    <div class="idlePulse">
-<div class="scene"></div>
-<div class="newAvatar"></div>
-</div>
-    <div class="redAlert"></div>
-    <div class="depthGlow"></div>
-    <div class="scan"></div>
-    <div class="facefx" id="facefx">
-      <div class="eye left"></div><div class="eye right"></div><div class="mouth"></div>
-    </div>
+  <div class="sceneWrap" id="sceneWrap">
+    <div class="scene"></div>
+  </div>
+  <div class="lightPulse"></div>
+  <div class="alert"></div>
+
+  <div class="faceFx">
+    <div class="lid left"></div>
+    <div class="lid right"></div>
+    <div class="jaw"></div>
   </div>
 
-  <div class="header">
-    <div class="logo">TONY // HOME CORE<small>PHOTOREAL 2.5D — V0.4</small></div>
-    <div class="time" id="clock">--:--<small id="date"></small></div>
-  </div>
+  <div class="mode">TONY // PHOTOREAL 2.5D — V0.5</div>
 
-  <div class="status" id="identity">MODE DÉMO — AVATAR 2.5D</div>
-
-  <div class="panel">
-    <h3>MAISON</h3>
-    <div class="row"><span>Home Assistant</span><b>SIMULÉ</b></div>
-    <div class="row"><span>Alarme</span><b id="alarm">DÉSACTIVÉE</b></div>
-    <div class="row"><span>Portail</span><b id="gate">FERMÉ</b></div>
-    <div class="row"><span>Lumières actives</span><b>2</b></div>
-  </div>
-
-  <div class="bottom">
+  <div class="replyBox">
     <div class="reply" id="reply">Bonjour. Je suis prêt.</div>
     <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="actions">
-      <button onclick="bedtime()">JE VAIS ME COUCHER</button>
-      <button onclick="toggleGate()">PORTAIL</button>
-      <button class="mic" onclick="listen()">◉</button>
-      <button onclick="toggleAlarm()">ALARME</button>
-    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="bedtime()">NUIT</button>
+    <button onclick="toggleGate()">PORTAIL</button>
+    <button class="mic" onclick="listen()">◉</button>
+    <button onclick="toggleAlarm()">ALARME</button>
   </div>
 </div>
 <script src="app.js"></script>

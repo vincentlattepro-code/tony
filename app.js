@@ -1,77 +1,85 @@
-const $=id=>document.getElementById(id);
-const app=$("app"), world=$("world");
-let armed=false, gate=false;
+const app=document.getElementById("app");
+const reply=document.getElementById("reply");
+const sceneWrap=document.getElementById("sceneWrap");
+let armed=false, gate=false, isSpeaking=false;
 
-function tick(){
- const d=new Date();
- $("clock").childNodes[0].nodeValue=d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
- $("date").textContent=d.toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"long"}).toUpperCase();
+function randomBlink(){
+  if(isSpeaking && Math.random()<.18) return;
+  app.classList.add("blink");
+  setTimeout(()=>app.classList.remove("blink"),300);
+  const next=2500+Math.random()*4200;
+  setTimeout(randomBlink,next);
 }
-tick(); setInterval(tick,1000);
+setTimeout(randomBlink,1600);
 
-// Simulated eye blinking
-function blink(){
- app.classList.add("blink");
- setTimeout(()=>app.classList.remove("blink"),380);
+/* Extremely small natural idle shifts.
+   More movement looked less realistic on a single image, so this stays restrained. */
+function idleShift(){
+  const x=(Math.random()-.5)*2.2;
+  const y=(Math.random()-.5)*1.1;
+  const r=(Math.random()-.5)*.16;
+  sceneWrap.style.transition="transform 2.6s ease-in-out";
+  sceneWrap.style.transform=`scale(1.019) translate(${x}px,${y}px) rotate(${r}deg)`;
+  setTimeout(idleShift,2600+Math.random()*1800);
 }
-setInterval(()=>{ if(Math.random()>.22) blink(); }, 3200);
+setTimeout(idleShift,1800);
 
-// Subtle "look at you" / pseudo-3D parallax
-function moveLook(x,y){
- const rx=(.5-y)*2.2, ry=(x-.5)*3.4;
- world.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+/* Pointer/device parallax kept tiny to preserve the photographic illusion */
+function look(px,py){
+  const x=(px-.5)*2.4;
+  const y=(py-.5)*1.3;
+  sceneWrap.style.transition="transform .55s ease-out";
+  sceneWrap.style.transform=`scale(1.02) translate(${x}px,${y}px)`;
 }
-window.addEventListener("pointermove",e=>moveLook(e.clientX/innerWidth,e.clientY/innerHeight));
-window.addEventListener("deviceorientation",e=>{
- if(e.gamma==null||e.beta==null)return;
- moveLook(Math.max(0,Math.min(1,.5+e.gamma/90)),Math.max(0,Math.min(1,.5+(e.beta-45)/120)));
-});
+addEventListener("pointermove",e=>look(e.clientX/innerWidth,e.clientY/innerHeight));
 
 function say(text){
- $("reply").textContent=text;
- if(!("speechSynthesis" in window)) return;
- speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);
- u.lang="fr-FR"; u.rate=.93; u.pitch=.88;
- u.onstart=()=>app.classList.add("speaking");
- u.onend=()=>app.classList.remove("speaking");
- u.onerror=()=>app.classList.remove("speaking");
- speechSynthesis.speak(u);
-}
-function toggleAlarm(){
- armed=!armed;
- app.classList.toggle("armed",armed);
- $("alarm").textContent=armed?"ACTIVÉE":"DÉSACTIVÉE";
- say(armed?"Alarme activée. La maison est sécurisée.":"Alarme désactivée. Bon retour.");
-}
-function toggleGate(){
- gate=!gate;
- $("gate").textContent=gate?"OUVERT":"FERMÉ";
- say(gate?"Ouverture du portail. Simulation en cours.":"Fermeture du portail. Simulation en cours.");
-}
-function bedtime(){
- say("Avant de passer en mode nuit : deux lumières sont encore allumées et l’alarme est désactivée. Voulez-vous que je prépare la maison ?");
-}
-function listen(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){say("La reconnaissance vocale n’est pas disponible dans ce navigateur.");return}
- const r=new SR(); r.lang="fr-FR"; r.interimResults=false;
- app.classList.add("listening");
- $("reply").textContent="Je vous écoute.";
- r.onresult=e=>route(e.results[0][0].transcript.toLowerCase());
- r.onend=()=>app.classList.remove("listening");
- r.onerror=()=>app.classList.remove("listening");
- r.start();
-}
-function route(t){
- if(t.includes("coucher")||t.includes("dormir")) return bedtime();
- if(t.includes("portail")) return toggleGate();
- if(t.includes("alarme")){
-   if((t.includes("désactive")||t.includes("désarme")) && armed) return toggleAlarm();
-   if((t.includes("active")||t.includes("arme")) && !armed) return toggleAlarm();
- }
- say("J’ai entendu : "+t+". Cette commande n’est pas encore connectée.");
+  reply.textContent=text;
+  if(!("speechSynthesis" in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="fr-FR";
+  u.rate=.92;
+  u.pitch=.86;
+  u.onstart=()=>{isSpeaking=true;app.classList.add("speaking")};
+  u.onend=()=>{isSpeaking=false;app.classList.remove("speaking")};
+  u.onerror=()=>{isSpeaking=false;app.classList.remove("speaking")};
+  speechSynthesis.speak(u);
 }
 
-// Initial greeting after load
-setTimeout(()=>say("Bonjour. Interface animée prête pour les essais."),700);
+function toggleAlarm(){
+  armed=!armed;
+  app.classList.toggle("armed",armed);
+  say(armed
+      ?"Alarme activée. La maison est sécurisée."
+      :"Alarme désactivée. Bon retour à la maison.");
+}
+function toggleGate(){
+  gate=!gate;
+  say(gate
+      ?"Ouverture du portail. Simulation en cours."
+      :"Fermeture du portail. Simulation en cours.");
+}
+function bedtime(){
+  say("Avant de passer en mode nuit : deux lumières sont encore allumées et l’alarme est désactivée. Voulez-vous que je prépare la maison ?");
+}
+function listen(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){say("La reconnaissance vocale n’est pas disponible dans ce navigateur.");return}
+  const r=new SR();
+  r.lang="fr-FR";
+  r.interimResults=false;
+  app.classList.add("listening");
+  reply.textContent="Je vous écoute.";
+  r.onresult=e=>route(e.results[0][0].transcript.toLowerCase());
+  r.onend=()=>app.classList.remove("listening");
+  r.onerror=()=>app.classList.remove("listening");
+  r.start();
+}
+function route(t){
+  if(t.includes("coucher")||t.includes("dormir")||t.includes("nuit"))return bedtime();
+  if(t.includes("portail"))return toggleGate();
+  if(t.includes("alarme"))return toggleAlarm();
+  say("J’ai entendu : "+t+". Cette commande n’est pas encore reliée à Home Assistant.");
+}
+setTimeout(()=>say("Bonjour. Interface photoréaliste prête pour les essais."),700);
