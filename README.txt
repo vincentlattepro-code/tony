@@ -1,22 +1,6 @@
-TONY HOME CORE — v0.5
-
-Cette version utilise UNIQUEMENT l'image verticale validée par l'utilisateur.
-Aucun second personnage n'est ajouté.
-
-Animations volontairement discrètes pour préserver le photoréalisme :
-- respiration visuelle très légère
-- micro-mouvements de posture
-- clignements subtils
-- micro-parallaxe
-- réaction pendant la parole
-- vague audio
-- réponse visuelle mode alarme
-- commandes vocales de démonstration si le navigateur les autorise
-
-Limite importante :
-Une image fixe ne peut pas produire des mouvements faciaux anatomiquement parfaits.
-Des mouvements trop forts diminuent immédiatement le réalisme.
-La v0.5 privilégie donc la crédibilité visuelle plutôt que des animations exagérées.
-
-GitHub Pages :
-remplacer les fichiers du dépôt par le contenu de ce ZIP.
+TONY CLASSIC ANIMATED v0.7
+Démo 100 % web sans LivePortrait ni GPU dédié.
+États : idle, écoute, réflexion, parole, alarme.
+Animations : respiration, clignements, micro-mouvements, ambiance, réaction vocale.
+GitHub Pages suffit pour l'hébergement.
+Pour le rendu final le plus réaliste sans GPU, la meilleure étape suivante est d'utiliser plusieurs petits clips WebM pré-calculés (idle/listening/thinking/speaking) et de les commuter selon l'état de Tony.
