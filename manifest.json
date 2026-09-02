@@ -1,8 +1,8 @@
 {
-  "name": "Tony Video Avatar v3",
-  "short_name": "Tony",
+  "name": "Dina — Assistant domestique",
+  "short_name": "Dina",
   "start_url": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#03070a",
   "theme_color": "#03070a"
 }
