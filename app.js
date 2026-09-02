@@ -7,27 +7,62 @@
   let mouth = 0;
   let targetX = 0, targetY = 0;
   let breathPhase = 0;
+  let baseBounds = null;
+
+  function viewportSize() {
+    const vv = window.visualViewport;
+    return {
+      w: Math.max(1, Math.round(vv ? vv.width : window.innerWidth)),
+      h: Math.max(1, Math.round(vv ? vv.height : window.innerHeight))
+    };
+  }
+
+  function resizeRenderer() {
+    if (!app) return;
+    const { w, h } = viewportSize();
+    app.renderer.resize(w, h);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+  }
 
   function fitModel() {
     if (!model || !app) return;
 
-    // IMPORTANT : la scène PIXI travaille en pixels CSS/logiques.
-    // renderer.width/height utilisent les pixels physiques sur les écrans
-    // Retina (iPhone/iPad), ce qui décalait Dina en bas à droite.
-    const w = app.screen.width;
-    const h = app.screen.height;
+    const { w, h } = viewportSize();
+    resizeRenderer();
 
-    const bounds = model.getLocalBounds();
-    const naturalW = Math.max(1, bounds.width);
-    const naturalH = Math.max(1, bounds.height);
+    if (!baseBounds) {
+      model.scale.set(1);
+      model.position.set(0, 0);
+      model.pivot.set(0, 0);
+      baseBounds = model.getLocalBounds();
+    }
 
-    // Cadrage responsive : Dina entière dans la zone visible, avec une petite marge.
-    const margin = (w < h) ? 0.90 : 0.94;
-    const scale = Math.min(w / naturalW, h / naturalH) * margin;
+    const bw = Math.max(1, baseBounds.width);
+    const bh = Math.max(1, baseBounds.height);
 
+    // Dina tient toujours dans l'écran, quelle que soit l'orientation.
+    // 88 % en portrait, 92 % en paysage pour conserver une marge visible.
+    const portrait = h >= w;
+    const usableW = w * (portrait ? 0.88 : 0.92);
+    const usableH = h * (portrait ? 0.88 : 0.90);
+    const scale = Math.min(usableW / bw, usableH / bh);
+
+    // On centre par le vrai rectangle du modèle au lieu d'utiliser anchor,
+    // ce qui évite les décalages iPhone/iPad/Retina.
+    model.pivot.set(
+      baseBounds.x + baseBounds.width / 2,
+      baseBounds.y + baseBounds.height / 2
+    );
     model.scale.set(scale);
-    model.anchor.set(0.5, 0.5);
     model.position.set(w / 2, h / 2);
+  }
+
+  function scheduleFit() {
+    fitModel();
+    requestAnimationFrame(() => fitModel());
+    setTimeout(fitModel, 120);
+    setTimeout(fitModel, 450);
   }
 
   function setupAudioAnalysis() {
@@ -82,26 +117,38 @@
     }
 
     PIXI.live2d.Live2DModel.registerTicker(PIXI.Ticker);
+
+    const { w, h } = viewportSize();
     app = new PIXI.Application({
       view: canvas,
-      resizeTo: window,
-      autoDensity: true,
+      width: w,
+      height: h,
       antialias: true,
       transparent: true,
       backgroundAlpha: 0,
-      resolution: Math.min(window.devicePixelRatio || 1, 2)
+      // Résolution logique volontairement fixée à 1 :
+      // évite le facteur x3 des écrans Retina qui provoquait le décalage.
+      resolution: 1,
+      autoDensity: false
     });
 
     try {
       model = await PIXI.live2d.Live2DModel.from(MODEL_URL, { autoInteract: false });
       app.stage.addChild(model);
-      fitModel();
-      window.addEventListener('resize', fitModel);
+      scheduleFit();
+
+      window.addEventListener('resize', scheduleFit);
+      window.addEventListener('orientationchange', () => setTimeout(scheduleFit, 180));
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', scheduleFit);
+      }
+
       app.ticker.add(updateLife, undefined, PIXI.UPDATE_PRIORITY.LOW);
 
       window.addEventListener('pointermove', (e) => {
-        targetX = Math.max(-1, Math.min(1, (e.clientX / innerWidth - 0.5) * 2));
-        targetY = Math.max(-1, Math.min(1, (0.5 - e.clientY / innerHeight) * 2));
+        const { w, h } = viewportSize();
+        targetX = Math.max(-1, Math.min(1, (e.clientX / w - 0.5) * 2));
+        targetY = Math.max(-1, Math.min(1, (0.5 - e.clientY / h) * 2));
       });
       window.addEventListener('pointerleave', () => {
         targetX = 0;
@@ -112,8 +159,6 @@
     }
   }
 
-  // Fonction conservée pour le futur backend : lance un fichier audio
-  // et synchronise automatiquement l'ouverture de la bouche.
   window.dinaPlayAudio = async (src) => {
     try {
       setupAudioAnalysis();
@@ -129,7 +174,7 @@
   window.dinaCenter = () => {
     targetX = 0;
     targetY = 0;
-    fitModel();
+    scheduleFit();
   };
 
   init();
