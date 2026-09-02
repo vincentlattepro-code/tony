@@ -10,13 +10,24 @@
 
   function fitModel() {
     if (!model || !app) return;
-    const w = app.renderer.width;
-    const h = app.renderer.height;
-    const scale = Math.min(w / model.width, h / model.height) * 0.93;
+
+    // IMPORTANT : la scène PIXI travaille en pixels CSS/logiques.
+    // renderer.width/height utilisent les pixels physiques sur les écrans
+    // Retina (iPhone/iPad), ce qui décalait Dina en bas à droite.
+    const w = app.screen.width;
+    const h = app.screen.height;
+
+    const bounds = model.getLocalBounds();
+    const naturalW = Math.max(1, bounds.width);
+    const naturalH = Math.max(1, bounds.height);
+
+    // Cadrage responsive : Dina entière dans la zone visible, avec une petite marge.
+    const margin = (w < h) ? 0.90 : 0.94;
+    const scale = Math.min(w / naturalW, h / naturalH) * margin;
+
     model.scale.set(scale);
     model.anchor.set(0.5, 0.5);
-    model.x = w / 2;
-    model.y = h / 2 + h * 0.055;
+    model.position.set(w / 2, h / 2);
   }
 
   function setupAudioAnalysis() {
