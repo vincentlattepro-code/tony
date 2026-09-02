@@ -9,11 +9,10 @@
   <title>Dina</title>
   <style>
     *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03070a}
-    #app{position:relative;width:100vw;height:100vh;overflow:hidden;background:
-      radial-gradient(ellipse at 50% 42%,#101010 0%,#070707 34%,#000 76%,#000 100%)}
-    #live2d{position:absolute;inset:0;width:100%;height:100%;z-index:2}
-    .hud{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.28) 100%)}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000 !important}
+    #app{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:#000 !important}
+    #live2d{position:absolute;inset:0;width:100%;height:100%;z-index:2;background:#000}
+    .hud{position:absolute;inset:0;z-index:3;pointer-events:none;background:transparent}
   </style>
 </head>
 <body>
@@ -26,6 +25,6 @@
   <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
-  <script src="app.js?v=20260902-2"></script>
+  <script src="app.js?v=20260902-3"></script>
 </body>
 </html>

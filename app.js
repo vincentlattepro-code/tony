@@ -3,6 +3,12 @@
   const canvas = document.getElementById('live2d');
   const voice = document.getElementById('voice');
 
+  // Fond noir absolu sur navigateur, PWA, iPhone/iPad et Android.
+  document.documentElement.style.background = '#000';
+  document.body.style.background = '#000';
+  const appEl = document.getElementById('app');
+  if (appEl) appEl.style.background = '#000';
+
   let app, model, audioCtx, analyser, source, dataArray;
   let mouth = 0;
   let targetX = 0, targetY = 0;
@@ -41,21 +47,23 @@
     const bw = Math.max(1, baseBounds.width);
     const bh = Math.max(1, baseBounds.height);
 
-    // Dina tient toujours dans l'écran, quelle que soit l'orientation.
-    // 88 % en portrait, 92 % en paysage pour conserver une marge visible.
+    // Responsive final : Dina reste entièrement visible, centrée horizontalement,
+    // et son buste vient jusqu'au bas de l'écran quel que soit le support.
     const portrait = h >= w;
-    const usableW = w * (portrait ? 0.88 : 0.92);
-    const usableH = h * (portrait ? 0.88 : 0.90);
+    const sideMargin = portrait ? 0.94 : 0.90;
+    const topMarginPx = Math.max(12, h * (portrait ? 0.025 : 0.035));
+    const usableW = w * sideMargin;
+    const usableH = h - topMarginPx;
     const scale = Math.min(usableW / bw, usableH / bh);
 
-    // On centre par le vrai rectangle du modèle au lieu d'utiliser anchor,
-    // ce qui évite les décalages iPhone/iPad/Retina.
+    // Ancrage sur le centre-bas du rectangle réel du modèle.
+    // Ainsi les épaules/buste touchent le bas sans couper la tête.
     model.pivot.set(
       baseBounds.x + baseBounds.width / 2,
-      baseBounds.y + baseBounds.height / 2
+      baseBounds.y + baseBounds.height
     );
     model.scale.set(scale);
-    model.position.set(w / 2, h / 2);
+    model.position.set(w / 2, h + 1);
   }
 
   function scheduleFit() {
