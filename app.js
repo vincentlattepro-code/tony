@@ -2,23 +2,11 @@
   const MODEL_URL = 'assets/dina/kei_vowels_pro.model3.json';
   const canvas = document.getElementById('live2d');
   const voice = document.getElementById('voice');
-  const voiceBtn = document.getElementById('voiceBtn');
-  const centerBtn = document.getElementById('centerBtn');
-  const state = document.getElementById('state');
-  const reply = document.getElementById('reply');
-  const errorBox = document.getElementById('error');
 
   let app, model, audioCtx, analyser, source, dataArray;
   let mouth = 0;
   let targetX = 0, targetY = 0;
   let breathPhase = 0;
-
-  const showError = (message) => {
-    console.error(message);
-    errorBox.textContent = message;
-    errorBox.style.display = 'block';
-    state.textContent = 'ERREUR DINA';
-  };
 
   function fitModel() {
     if (!model || !app) return;
@@ -78,7 +66,7 @@
 
   async function init() {
     if (!window.PIXI || !PIXI.live2d || !window.Live2DCubismCore) {
-      showError('Les bibliothèques Live2D n’ont pas pu être chargées. Vérifie la connexion Internet puis recharge la page.');
+      console.error('Bibliothèques Live2D indisponibles.');
       return;
     }
 
@@ -98,48 +86,40 @@
       app.stage.addChild(model);
       fitModel();
       window.addEventListener('resize', fitModel);
-
-      // L’ordre LOW applique nos micro-mouvements après la mise à jour standard du modèle.
       app.ticker.add(updateLife, undefined, PIXI.UPDATE_PRIORITY.LOW);
 
       window.addEventListener('pointermove', (e) => {
         targetX = Math.max(-1, Math.min(1, (e.clientX / innerWidth - 0.5) * 2));
         targetY = Math.max(-1, Math.min(1, (0.5 - e.clientY / innerHeight) * 2));
       });
-      window.addEventListener('pointerleave', () => { targetX = 0; targetY = 0; });
-
-      voiceBtn.disabled = false;
-      centerBtn.disabled = false;
-      state.textContent = 'DINA DISPONIBLE';
-      reply.textContent = 'Bonjour. Je suis Dina.';
+      window.addEventListener('pointerleave', () => {
+        targetX = 0;
+        targetY = 0;
+      });
     } catch (err) {
-      showError('Impossible de charger le modèle Dina : ' + (err?.message || err));
+      console.error('Impossible de charger Dina :', err);
     }
   }
 
-  voiceBtn.addEventListener('click', async () => {
+  // Fonction conservée pour le futur backend : lance un fichier audio
+  // et synchronise automatiquement l'ouverture de la bouche.
+  window.dinaPlayAudio = async (src) => {
     try {
       setupAudioAnalysis();
       if (audioCtx.state === 'suspended') await audioCtx.resume();
+      if (src) voice.src = src;
       voice.currentTime = 0;
-      document.body.classList.add('speaking');
-      state.textContent = 'DINA PARLE';
-      reply.textContent = 'Test de la voix française et de la synchronisation labiale…';
       await voice.play();
     } catch (err) {
-      showError('Lecture audio impossible : ' + (err?.message || err));
+      console.error('Lecture audio impossible :', err);
     }
-  });
+  };
 
-  voice.addEventListener('ended', () => {
-    document.body.classList.remove('speaking');
-    state.textContent = 'DINA DISPONIBLE';
-    reply.textContent = 'Bonjour. Je suis Dina.';
-  });
-
-  centerBtn.addEventListener('click', () => {
-    targetX = 0; targetY = 0; fitModel();
-  });
+  window.dinaCenter = () => {
+    targetX = 0;
+    targetY = 0;
+    fitModel();
+  };
 
   init();
 })();

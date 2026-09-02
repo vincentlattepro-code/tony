@@ -6,34 +6,16 @@
   <meta name="theme-color" content="#03070a">
   <meta name="description" content="Dina — assistant domestique Live2D">
   <link rel="manifest" href="manifest.json">
-  <title>Dina — Assistant</title>
+  <title>Dina</title>
   <style>
     *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03070a;color:#fff;font-family:Inter,system-ui,Arial,sans-serif}
-    body{display:grid;place-items:center}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03070a}
     #app{position:relative;width:100vw;height:100vh;overflow:hidden;background:
       radial-gradient(circle at 50% 38%,rgba(21,115,143,.18),transparent 34%),
       linear-gradient(180deg,#071016 0%,#020609 100%)}
     #live2d{position:absolute;inset:0;width:100%;height:100%;z-index:2}
     .grid{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.13;background-image:linear-gradient(rgba(97,232,255,.25) 1px,transparent 1px),linear-gradient(90deg,rgba(97,232,255,.25) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,transparent 0%,#000 28%,#000 80%,transparent 100%)}
     .hud{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.12),transparent 24%,transparent 72%,rgba(0,0,0,.44))}
-    .status{position:absolute;z-index:6;top:max(18px,2.2vh);left:50%;transform:translateX(-50%);padding:8px 14px;border:1px solid rgba(97,232,255,.42);border-radius:999px;background:rgba(2,10,14,.72);backdrop-filter:blur(10px);font-size:11px;font-weight:800;letter-spacing:.12em;white-space:nowrap}
-    .dot{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:#6effb8;box-shadow:0 0 10px #6effb8}
-    body.speaking .dot{background:#61e8ff;box-shadow:0 0 12px #61e8ff}
-    .bottom{position:absolute;z-index:7;left:50%;bottom:max(18px,2.5vh);transform:translateX(-50%);width:min(92%,760px);text-align:center}
-    .reply{font-weight:760;font-size:clamp(16px,2.2vw,25px);text-shadow:0 3px 16px #000;min-height:38px;margin-bottom:5px}
-    .wave{height:28px;display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:10px}
-    .wave i{width:2px;height:4px;background:#61e8ff;box-shadow:0 0 7px #61e8ff;opacity:.45}
-    body.speaking .wave i{animation:w .7s ease-in-out infinite}
-    .wave i:nth-child(2n){animation-delay:.1s}.wave i:nth-child(3n){animation-delay:.2s}.wave i:nth-child(5n){animation-delay:.3s}
-    @keyframes w{50%{height:24px;opacity:1}}
-    .controls{pointer-events:auto;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-    button{border:1px solid rgba(97,232,255,.46);background:rgba(1,10,15,.84);color:white;border-radius:999px;padding:10px 15px;font-weight:800;cursor:pointer;backdrop-filter:blur(8px)}
-    button:hover{background:rgba(10,35,46,.9)}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .note{display:block;margin-top:7px;font-size:10px;opacity:.65}
-    #error{position:absolute;z-index:20;inset:20px auto auto 20px;max-width:min(520px,calc(100vw - 40px));padding:12px 14px;border:1px solid rgba(255,100,100,.5);background:rgba(50,0,0,.78);border-radius:10px;font-size:12px;display:none}
-    @media(max-width:600px){.status{top:12px}.bottom{bottom:12px}.reply{font-size:17px}}
   </style>
 </head>
 <body>
@@ -41,21 +23,9 @@
     <div class="grid"></div>
     <canvas id="live2d"></canvas>
     <div class="hud"></div>
-    <div class="status"><span class="dot"></span><span id="state">DINA DISPONIBLE</span></div>
-    <div class="bottom">
-      <div class="reply" id="reply">Bonjour. Je suis Dina.</div>
-      <div class="wave">${'<i></i>'*18}</div>
-      <div class="controls">
-        <button id="voiceBtn" disabled>TEST VOIX FRANÇAISE</button>
-        <button id="centerBtn" disabled>RECENTRER</button>
-      </div>
-      <span class="note">Test local de l’avatar + synchronisation labiale. La voix finale sera fournie par le backend Dina.</span>
-    </div>
-    <div id="error"></div>
     <audio id="voice" preload="auto" src="assets/dina/sounds/dina_kokoro.wav"></audio>
   </div>
 
-  <!-- Live2D Cubism Core officiel + PixiJS + renderer Live2D -->
   <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
